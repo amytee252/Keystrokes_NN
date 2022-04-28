@@ -24,6 +24,11 @@ The dataset contains 34 features, of which 31 features are floats, 2 are ints, a
 The raw typing data (e.g. keystrokes and timestamps) cannot be directly used by an anomoly detector. A set of timing features has been extracted from the raw data. The features are organised into a vector of times, called a `timing vector'. 
 
 
+# Data Cleaning
+
+All but one of the features can be trained on 'as is', except the feature 'subject' as this is an object, rather than an int or float. Each unique subject is replaced by an integer, e.g subject with ID s002 is replaced by 0.
+
+
 
 ### Thoughts 
 
