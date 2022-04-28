@@ -49,19 +49,10 @@ The third column, 'rep', identifies the ith time the password was typed, which r
 
 The remaining columns represent timing information for the password. The column name identifies the type of timing information recorded.
 
+Column names containing H.key record the time from when the named key was pressed to when it was released, a.k.a hold time
 
+Column names containing DD.key1.key2 record the time from when key1 was pressed to when key2 was pressed, a.k.a keydown-keydown time
 
-Column names of the form H.key designate a hold time for the named key (i.e., the time from when key was pressed to when it was released).
+Column names containing UD.key1.key2 record the time between when key1 was released and key2 was pressed, a.k.a keyup-keydown time. UD.key1.key2 times can be negative, and H.key times and UD.key1.key2 add up to DD.key1.key2 times.
 
-Column names of the form DD.key1.key2 designate a keydown-keydown time for the named digraph (i.e., the time from when key1 was pressed to when key2 was pressed).
-
-Column names of the form UD.key1.key2 designate a keyup-keydown time for the named digraph (i.e., the time from when key1 was released to when key2 was pressed). Note that UD times can be negative, and that H times and UD times add up to DD times.
-
-Consider the following one-line example of what you will see in the data:
-subject sessionIndex rep H.period DD.period.t UD.period.t ...
-s002 1 1 0.1491 0.3979 0.2488 ...
-
-The example presents typing data for subject 2, session 1, repetition 1.
-
-The period key was held down for 0.1491 seconds (149.1 milliseconds); the time between pressing the period key and the t key (keydown-keydown time) was 0.3979 seconds; the time between releasing the period and pressing the t key (keyup-keydown time) was 0.2488 seconds; and so on.
 
