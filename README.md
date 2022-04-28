@@ -16,47 +16,7 @@ Whenever a subject presses or releases a key, the application records the event 
 
 The subjects consisted of 30 males and 21 females. 8 were left-handed, and 43 were right-handed. The median age froup was 31-40, the youngest was 18-20 and the oldest was 61-70. The subject's sessions took between 1.25 - 11 minutes, which the median session taking 3 minutes.
 
-The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51).
-
-RangeIndex: 20400 entries, 0 to 20399
-Data columns (total 34 columns):
- #   Column           Non-Null Count  Dtype  
----  ------           --------------  -----  
- 0   subject          20400 non-null  object 
- 1   sessionIndex     20400 non-null  int64  
- 2   rep              20400 non-null  int64  
- 3   H.period         20400 non-null  float64
- 4   DD.period.t      20400 non-null  float64
- 5   UD.period.t      20400 non-null  float64
- 6   H.t              20400 non-null  float64
- 7   DD.t.i           20400 non-null  float64
- 8   UD.t.i           20400 non-null  float64
- 9   H.i              20400 non-null  float64
- 10  DD.i.e           20400 non-null  float64
- 11  UD.i.e           20400 non-null  float64
- 12  H.e              20400 non-null  float64
- 13  DD.e.five        20400 non-null  float64
- 14  UD.e.five        20400 non-null  float64
- 15  H.five           20400 non-null  float64
- 16  DD.five.Shift.r  20400 non-null  float64
- 17  UD.five.Shift.r  20400 non-null  float64
- 18  H.Shift.r        20400 non-null  float64
- 19  DD.Shift.r.o     20400 non-null  float64
- 20  UD.Shift.r.o     20400 non-null  float64
- 21  H.o              20400 non-null  float64
- 22  DD.o.a           20400 non-null  float64
- 23  UD.o.a           20400 non-null  float64
- 24  H.a              20400 non-null  float64
- 25  DD.a.n           20400 non-null  float64
- 26  UD.a.n           20400 non-null  float64
- 27  H.n              20400 non-null  float64
- 28  DD.n.l           20400 non-null  float64
- 29  UD.n.l           20400 non-null  float64
- 30  H.l              20400 non-null  float64
- 31  DD.l.Return      20400 non-null  float64
- 32  UD.l.Return      20400 non-null  float64
- 33  H.Return         20400 non-null  float64
-dtypes: float64(31), int64(2), object(1)
+The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51). Please see dataset/dataset_features.txt for more in-depth discussion of the dataset.
 
 
 ### Using the Dataset with an Anomoly Detector

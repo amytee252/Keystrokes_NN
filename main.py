@@ -11,4 +11,4 @@ import seaborn as sns
 df = pd.read_csv("./dataset/DSL-StrongPasswordData.csv") #open csv file for reading in pandas dataframe
 
 print(df.info()) #Get info about dataframe
-print(df.head()) #look at first handful of entries to know what we are dealing with
+print(df) #look at first handful of entries to know what we are dealing with
