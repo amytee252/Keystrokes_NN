@@ -39,7 +39,7 @@ unique_users = df['subject'].nunique()
 
 #Want to split the dataset in half (training and testing) somewhat at random. Each subject has half their data selected for training and the other half for testing.
 
-
+#Create dictionaries to hold multiple dataframes
 df_temp_dict = {}
 df_train_dict = {}
 df_test_dict = {}
