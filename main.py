@@ -35,3 +35,31 @@ df = df.replace(subjects_to_int) #replace subject column with subjects_to_int
 print(df.head)
 print(df.info() )
 
+unique_users = df['subject'].nunique()
+
+#Want to split the dataset in half (training and testing) somewhat at random. Each subject has half their data selected for training and the other half for testing.
+
+
+df_temp_dict = {}
+df_train_dict = {}
+df_test_dict = {}
+for subject in range(unique_users):
+	df_temp_dict[subject] = pd.DataFrame()
+	df_train_dict[subject] = pd.DataFrame()
+	df_test_dict[subject] = pd.DataFrame()
+	grouped = df.groupby(['subject'])
+	df_temp_dict[subject] = grouped.get_group(subject)
+	df_train_dict[subject] = df_temp_dict[subject].sample(n=200)
+	df_test_dict[subject] = df_temp_dict[subject].drop(df_train_dict[subject].index)
+	#print(df_train_dict[subject].info)
+	#print(df_test_dict[subject].info)
+
+
+df_train = pd.concat(df_train_dict.values(), ignore_index=True)
+print(df_train)
+df_test = pd.concat(df_test_dict.values(), ignore_index=True)
+print(df_test)
+
+
+
+
