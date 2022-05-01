@@ -28,6 +28,7 @@ The raw typing data (e.g. keystrokes and timestamps) cannot be directly used by 
 
 All but one of the features can be trained on 'as is', except the feature 'subject' as this is an object, rather than an int or float. Each unique subject is replaced by an integer, e.g subject with ID s002 is replaced by 0.
 
+Three data columns are dropped during training, subject, sessionIndex, and rep. Subject is the user ID, sessionIndex details which session the data was collected in (1-8), and rep, details the ith attempt at entering the password (1-50). Therefore, the NN only trains on time data.
 
 
 ### Thoughts 

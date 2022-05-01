@@ -22,15 +22,6 @@ df_original = df.copy() #Always keep an original copy of the dataframe before an
 
 #Lets plot a few things to understand what the data looks like
 
-
-
-
-
-
-
-
-
-
 #As the feature 'subject' is an object in the dataset, we need to convert it to something that can be trained on.
 subjects = df['subject'].unique()  #Store all unique subject IDs
 subjects_to_int = {subject: i  for i, subject in enumerate(subjects)} #Change all unique subject IDs(key) to integers(value) and store in dictionary
@@ -63,19 +54,18 @@ for subject in range(unique_users):
 	df_imposter_dict[subject] = pd.DataFrame()
 	grouped = df.groupby(['subject'])
 	df_temp_dict[subject] = grouped.get_group(subject)
-	df_train_dict[subject] = df_temp_dict[subject].sample(n=200)  #change to first 200
-	df_test_dict[subject] = df_temp_dict[subject].drop(df_train_dict[subject].index) #Change to last 200
+	df_train_dict[subject] = df_temp_dict[subject].sample(n=200)  # Instead of taking first 200 I am sampling randomly
+	df_test_dict[subject] = df_temp_dict[subject].drop(df_train_dict[subject].index) 
 	imposter_data = df.loc[df.subject != subject, :]  
 	df_imposter_dict[subject] = imposter_data.groupby("subject").head(5)#.loc[:, "H.period":"H.Return"]
 	if subject is  50:
 		print("Last user's dataframe")
 		print(df_imposter_dict[subject])
-	#df_temp_dict[subject] = pd.DataFrame(scaler.fit_transform(df_temp_dict[subject]), columns=df_temp_dict[subject].columns)  #Normalizes the data in the dataframe
+
 	df_train_dict[subject] = pd.DataFrame(scaler.fit_transform(df_train_dict[subject]), columns=df_temp_dict[subject].columns)
 	df_test_dict[subject] = pd.DataFrame(scaler.fit_transform(df_test_dict[subject]), columns=df_temp_dict[subject].columns)
 	df_imposter_dict[subject] = pd.DataFrame(scaler.fit_transform(df_imposter_dict[subject]), columns=df_temp_dict[subject].columns)
-	#print(df_train_dict[subject].info)
-	#print(df_test_dict[subject].info)
+
 	if subject is  50:
 		print("Last user's dataframe with scaling applied")
 		print(df_imposter_dict[subject])
@@ -87,21 +77,34 @@ for subject in range(unique_users):
 		print("Last user's dataframe when columns are dropped")
 		print(df_imposter_dict[subject].info())
 		print(df_imposter_dict[subject])
-	#test_ds_[subject] = df_to_dataset(df_test_dict[subject],  batch_size=batch_size)
-	#imposter_ds_[subject] = df_to_dataset(df_imposter_dict[subject],  batch_size=batch_size)
-
-#df_train = pd.concat(df_train_dict.values(), ignore_index=True)
-#print(df_train)
-#df_test = pd.concat(df_test_dict.values(), ignore_index=True)
-#print(df_test)
 
 
 model = tf.keras.Sequential([  #build NN
 			tf.keras.layers.Dense(31, activation='relu'),   #Change it to get 31 from length of columns
-			tf.keras.layers.Dense(8 , activation='relu'),
+			tf.keras.layers.Dense(8 , activation='relu'),  #Maybe add in a dropout layer? 20% dropout to prevent against overfitting
 			tf.keras.layers.Dense(1 , activation='sigmoid')
 ])
 
+
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+history = model.fit(x, y, epochs=100, batch_size=64)
+
+
+plt.plot(history.history['acc'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+
+#Loop over subjects
+#convert each dataframe to a tensorflow tensor
+#train
+#test with test
+#test with imposters
 
 
 #Train is train
