@@ -18,6 +18,10 @@ The subjects consisted of 30 males and 21 females. 8 were left-handed, and 43 we
 
 The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51). Please see dataset/dataset_features.txt for more in-depth discussion of the dataset.
 
+### Plots
+
+Before making any changes to the dataset, each variable has been plotted. Please note that producing these plots is slow, so these plots have been made once, stored in the 'plots' directory and then this part of the code has been commented out. Afterall, these plots only need to be made once, not everytime the code is run. 
+
 
 ### Using the Dataset with an Anomoly Detector
 
@@ -43,7 +47,7 @@ If I am looking at my keyboard rather than screen, I am less likely to make a mi
 
 ### Data Setup
 
-Although it is requested to use the first 200 feature vectors of each subject (user) as training data, I have decided against this. This is because..... . Instead what I have done is taken 200 feature vectors for each subject at random from the 400 feature vectors that are available for each subject. The remaining 200 feature vectors are used as positive test data for each user. Then the first 5 samples from the remaining 50 subjects are used to form 250 negative feature vectors as imposters for the authentication phase for this user. The imposter's samples are never seen during the training time. As such there are 51 sets of trainings/testings performed, each using a different subjects data for training and testing. 
+Although it is requested to use the first 200 feature vectors of each subject (user) as training data, I have decided against this. This is because if you take the first 200 typing samples, there is likely to be strong intraclass variances that comes when the user is typing the same password repeatedly, and this will negatively affect the results, as they are likely to get quicker and more accurate at typing the same password repeatedly. Instead what I have done is taken 200 feature vectors for each subject at random from the 400 feature vectors that are available for each subject. The remaining 200 feature vectors are used as positive test data for each user. Then the first 5 samples from the remaining 50 subjects are used to form 250 negative feature vectors as imposters for the authentication phase for this user. The imposter's samples are never seen during the training time. As such there are 51 sets of trainings/testings performed, each using a different subjects data for training and testing. 
 
 The authentication accuracy is evaluated using the equal error rate (EER), where the miss rate and false alarm rate are equal. The evaluation is performed for each subject. The mean and standard deviation of the EERs for the 51 subjects is also reported.
 

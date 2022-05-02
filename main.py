@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 import seaborn as sns
 
@@ -21,6 +21,30 @@ print(df) #look at first handful of entries to know what we are dealing with
 df_original = df.copy() #Always keep an original copy of the dataframe before any changes are made to it, just in case it is useful in the future!
 
 #Lets plot a few things to understand what the data looks like
+### plot some things!
+
+
+def plot_1d (y_var, x_var, dataframe):
+	sns_plot = sns.swarmplot(y=df[y_var], x=df[x_var], data=dataframe, s=1, size = 20)
+	fig1 = sns_plot.get_figure()
+	sns_plot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
+	sns_plot.tick_params(axis='x', labelsize=5)
+	fig1.savefig('plots/' + y_var + '_' + x_var + '.png', dpi = 300)
+
+	sns_boxplot = sns.boxplot(y=df[y_var], x=df[x_var], data=dataframe, whis=np.inf)
+	sns_boxplot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
+	sns_boxplot.tick_params(axis='x', labelsize=5)
+	fig2 = sns_boxplot.get_figure()
+	fig2.savefig('plots/' + y_var + '_' + x_var + '_boxplot.png', dpi = 300)
+
+#DO NOT UNCOMMENT THE BELOW! IT HAS ALREADY BEEN RUN AND UNCOMMENTING THIS WILL WASTE HOURS OF YOUR LIFE!!!!
+'''
+for column in df.columns[3:]:
+	plot_1d(str(column), 'subject', df)
+'''	
+
+##ALSO PLOT SOME 2D THINGS
+
 
 #As the feature 'subject' is an object in the dataset, we need to convert it to something that can be trained on.
 subjects = df['subject'].unique()  #Store all unique subject IDs
@@ -30,6 +54,7 @@ int_to_subjects = {i: subject for i, subject in enumerate(subjects)} #..and vice
 df = df.replace(subjects_to_int) #replace subject column with subjects_to_int
 print(df.head)
 print(df.info() )
+
 
 unique_users = df['subject'].nunique()
 
@@ -85,9 +110,9 @@ model = tf.keras.Sequential([  #build NN
 			tf.keras.layers.Dense(1 , activation='sigmoid')
 ])
 
+'''
 
-
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+#model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 history = model.fit(x, y, epochs=100, batch_size=64)
 
@@ -108,4 +133,6 @@ plt.show()
 
 
 #Train is train
+
+'''
 #test is test and again test with imposter
