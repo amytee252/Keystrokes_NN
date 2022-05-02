@@ -24,7 +24,7 @@ df_original = df.copy() #Always keep an original copy of the dataframe before an
 ### plot some things!
 
 
-def plot_1d (y_var, x_var, dataframe):
+def swarmplot(y_var, x_var, dataframe):
 	sns_plot = sns.swarmplot(y=df[y_var], x=df[x_var], data=dataframe, s=1, size = 20)
 	fig1 = sns_plot.get_figure()
 	sns_plot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
@@ -40,10 +40,29 @@ def plot_1d (y_var, x_var, dataframe):
 #DO NOT UNCOMMENT THE BELOW! IT HAS ALREADY BEEN RUN AND UNCOMMENTING THIS WILL WASTE HOURS OF YOUR LIFE!!!!
 '''
 for column in df.columns[3:]:
-	plot_1d(str(column), 'subject', df)
+	swarmplot(str(column), 'subject', df)
 '''	
+#Scatterplot of PPD vs RPD  PPD = H + UD  RPD = UD  password = .tie5Roanl
+def scatterplot(y_var, x_var, dataframe):
+	y_label = y_var
+	x_label = x_var + " + " + y_var
+	x_label_save = x_var + "+" + y_var
+	sns_scatterplot = sns.scatterplot(y=df[y_var], x=( df[x_var] + df[y_var] ), hue = 'subject', data=df, s=2)
+	sns_scatterplot.set_xlabel(x_label)
+	sns_scatterplot.set_ylabel(y_label)
+	handles, labels = sns_scatterplot.get_legend_handles_labels()
+	sns_scatterplot.legend(handles[:dataframe.subject.nunique()], labels[:dataframe.subject.nunique()])
+	sns_scatterplot.legend(loc=4, prop={'size': 1})  #NEED TO MAKE LEGEND SMALLER!!!!
+	sns_scatterplot.legend()
+	fig3 = sns_scatterplot.get_figure()
+	fig3.savefig('plots/' + y_label + '_' + x_label_save + '_scatterplot.png', dpi = 300)
 
-##ALSO PLOT SOME 2D THINGS
+strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']
+
+for i in range(len(strings) - 1):
+	string_first = strings[i]
+	string_second = strings[i+1]
+	scatterplot('UD.' + string_first + '.' + string_second, 'H.' + string_second, df)
 
 
 #As the feature 'subject' is an object in the dataset, we need to convert it to something that can be trained on.
