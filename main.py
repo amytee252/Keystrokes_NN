@@ -25,7 +25,7 @@ import csv
 from plots import *
 from EER import *
 
-#TABS NOT SPACES!!!!
+
 
 df = pd.read_csv("./dataset/DSL-StrongPasswordData.csv") #open csv file for reading in pandas dataframe
 
@@ -36,49 +36,19 @@ print(df) #look at first handful of entries to know what we are dealing with
 df_original = df.copy() #Always keep an original copy of the dataframe before any changes are made to it, just in case it is useful in the future!
 
 #Lets plot a few things to understand what the data looks like
-### plot some things!
 
-'''
-def swarmplot(y_var, x_var, dataframe):
-	sns_plot = sns.swarmplot(y=df[y_var], x=df[x_var], data=dataframe, s=1, size = 20)
-	fig1 = sns_plot.get_figure()
-	sns_plot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
-	sns_plot.tick_params(axis='x', labelsize=5)
-	fig1.savefig('plots/' + y_var + '_' + x_var + '.png', dpi = 300)
+#DO NOT UNCOMMENT THE BELOW! IT HAS ALREADY BEEN RUN AND UNCOMMENTING THIS WILL WASTE HOURS OF YOUR LIFE TRYING TO PLOT STUFF THAT ALREADY EXISTS !!!!
 
-	sns_boxplot = sns.boxplot(y=df[y_var], x=df[x_var], data=dataframe, whis=np.inf)
-	sns_boxplot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
-	sns_boxplot.tick_params(axis='x', labelsize=5)
-	fig2 = sns_boxplot.get_figure()
-	fig2.savefig('plots/' + y_var + '_' + x_var + '_boxplot.png', dpi = 300)
-
-#DO NOT UNCOMMENT THE BELOW! IT HAS ALREADY BEEN RUN AND UNCOMMENTING THIS WILL WASTE HOURS OF YOUR LIFE!!!!
-
-for column in df.columns[3:]:
-	swarmplot(str(column), 'subject', df)
+#for column in df.columns[3:]:
+#	swarmplot(str(column), 'subject', df)
 	
-#Scatterplot of PPD vs RPD  PPD = H + UD  RPD = UD  password = .tie5Roanl
-def scatterplot(y_var, x_var, dataframe):
-	y_label = y_var
-	x_label = x_var + " + " + y_var
-	x_label_save = x_var + "+" + y_var
-	sns_scatterplot = sns.scatterplot(y=df[y_var], x=( df[x_var] + df[y_var] ), hue = 'subject', data=df, s=2)
-	sns_scatterplot.set_xlabel(x_label)
-	sns_scatterplot.set_ylabel(y_label)
-	handles, labels = sns_scatterplot.get_legend_handles_labels()
-	sns_scatterplot.legend(handles[:dataframe.subject.nunique()], labels[:dataframe.subject.nunique()])
-	sns_scatterplot.legend(loc=4, prop={'size': 1})  #NEED TO MAKE LEGEND SMALLER!!!!
-	sns_scatterplot.legend()
-	fig3 = sns_scatterplot.get_figure()
-	fig3.savefig('plots/' + y_label + '_' + x_label_save + '_scatterplot.png', dpi = 300)
+#strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']
 
-strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']
+#for i in range(len(strings) - 1):
+#	string_first = strings[i]
+#	string_second = strings[i+1]
+#	scatterplot('UD.' + string_first + '.' + string_second, 'H.' + string_second, df)
 
-for i in range(len(strings) - 1):
-	string_first = strings[i]
-	string_second = strings[i+1]
-	scatterplot('UD.' + string_first + '.' + string_second, 'H.' + string_second, df)
-'''
 
 
 
@@ -101,12 +71,6 @@ def df_to_dataset(dataframe):  #Function to convert the dataframe to a tensorflo
 
 unique_users = df['subject'].nunique()
 
-
-def df_to_dataset(dataframe,  batch_size=1):  #Function to convert the dataframe to a tensorflow dataframe that can be ML'd on
-	dataframe = dataframe.copy()
-	new_df =tf.convert_to_tensor(dataframe)
-	return new_df 
-
 def nn_model(input_dim, output_dim=1, nodes=31):
 	model = keras.Sequential()
 	model.add(Dense(nodes, input_dim=input_dim, activation='relu'))
@@ -118,71 +82,7 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 
 
 
-	
-#eer_per_user_dict = {}
-'''
-def evaluateEER(user_scores, imposter_scores, subject):
-	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
-	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
-	roc_auc = metrics.auc(fpr, tpr)
-	missrates = 1 - tpr
-	farates = fpr
-	dists = missrates - farates
-	idx1 = np.argmin(dists[dists >= 0])
-	idx2 = np.argmax(dists[dists < 0])
-	x = [missrates[idx1], farates[idx1]]
-	y = [missrates[idx2], farates[idx2]]
-	a = ( x[0] - x[1] ) / ( y[1] - x[1] - y[0] + x[0] )
-	eer = x[0] + a * ( y[0] - x[0] )
-	print('subject: ', subject ,' eer: ', eer)
-	eer_per_user_dict[subject] = eer
-	return eer
-'''
 
-
-'''
-	plt.figure()
-	plt.title('EER per user')
-	plt.xlabel('user')
-	plt.ylabel('EER')
-	plt.bar(subject, eer)
-	plt.draw()
-	plt.savefig('plots/EER_per_user.png')
-'''
-
-'''
-def ROCplot (subject, user_scores, imposter_scores):
-	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
-	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
-	roc_auc = metrics.auc(fpr, tpr)
-	plt.figure() 
-	plt.title('Receiver Operating Characteristic')
-	plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
-	plt.legend(loc = 'lower right')
-	plt.plot([0, 1], [0, 1],'r--')
-	plt.xlim([0, 1])
-	plt.ylim([0, 1])
-	plt.ylabel('True Positive Rate')
-	plt.xlabel('False Positive Rate')
-	plt.savefig('plots/ROC_' + str(subject) + '.png')
-	plt.figure().clear()
-	plt.close()
-	plt.cla()
-	plt.clf()
-
-
-
-def plot_loss(x , y, subject):
-	plt.plot(x)  #Make a plot of the mae (similar to loss) vs. epochs
-	plt.plot(y)
-	plt.title('model loss')
-	plt.ylabel('loss')
-	plt.xlabel('epoch')
-	plt.legend(['train', 'test'], loc='upper left')
-	#plt.show()
-	plt.savefig('plots/ROC_' + str(subject) + '.png')
-
-'''
 #Create dictionaries to hold multiple dataframes
 df_temp_dict = {}
 df_train_dict = {}
@@ -190,6 +90,8 @@ df_test_dict = {}  #used as positive examples
 df_imposter_dict = {} #used as negative examples
 scaler = MinMaxScaler()  #Need to scale between 0-1 as using ReLu activation function
 eers = []
+
+#MAKE A FUNCTION WHICH DOES THIS DATAFRAME MANIPULATION AND THEN PASS IT IN
 
 for subject in range(unique_users):
 
@@ -251,18 +153,6 @@ print('eer mean: ' , np.mean(eers), ' eer std: ', np.std(eers))
 print(eer_per_user_dict)
 
 
-def eerPlot(data):
-
-	names = list(data.keys())
-	values = list(data.values())
-	plt.figure()
-	plt.bar(range(len(data)), values, tick_label=names)
-	plt.title('EER per user')
-	plt.xlabel('user', fontsize = 1)
-	plt.xticks(rotation=90)
-	plt.ylabel('EER')
-	plt.draw()
-	plt.savefig('plots/EER_per_user.png')
 
 eerPlot(eer_per_user_dict)
 

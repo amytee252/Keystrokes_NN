@@ -36,6 +36,9 @@ def swarmplot(y_var, x_var, dataframe):
 	fig2.savefig('plots/' + y_var + '_' + x_var + '_boxplot.png', dpi = 300)
 
 
+
+strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']   # array to be used with scatterplot function below
+
 # Creates 2D scatterplots of PPD vs RPD where PPD = H + UD  RPD = UD  
 def scatterplot(y_var, x_var, dataframe):
 	y_label = y_var
