@@ -119,8 +119,8 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 
 
 	
-#eer_per_user_dict = {}
-'''
+eer_per_user_dict = {}
+
 def evaluateEER(user_scores, imposter_scores, subject):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
 	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
@@ -137,20 +137,7 @@ def evaluateEER(user_scores, imposter_scores, subject):
 	print('subject: ', subject ,' eer: ', eer)
 	eer_per_user_dict[subject] = eer
 	return eer
-'''
 
-
-'''
-	plt.figure()
-	plt.title('EER per user')
-	plt.xlabel('user')
-	plt.ylabel('EER')
-	plt.bar(subject, eer)
-	plt.draw()
-	plt.savefig('plots/EER_per_user.png')
-'''
-
-'''
 def ROCplot (subject, user_scores, imposter_scores):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
 	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
@@ -182,7 +169,6 @@ def plot_loss(x , y, subject):
 	#plt.show()
 	plt.savefig('plots/ROC_' + str(subject) + '.png')
 
-'''
 #Create dictionaries to hold multiple dataframes
 df_temp_dict = {}
 df_train_dict = {}
