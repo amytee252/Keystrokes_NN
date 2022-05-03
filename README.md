@@ -34,6 +34,21 @@ All but one of the features can be trained on 'as is', except the feature 'subje
 
 Three data columns are dropped during training, subject, sessionIndex, and rep. Subject is the user ID, sessionIndex details which session the data was collected in (1-8), and rep, details the ith attempt at entering the password (1-50). Therefore, the NN only trains on time data.
 
+No more data cleaning needs to be performed on this dataset. The data has already been cleaned (if it even needed to be) by the authors of the dataset.
+
+# Training and Evaluating steps
+
+There are four main steps to discriminate a single subject (designated as a genuine user) from the other 50 subjects (designated as imposters). After evaluating for a single subject, the four steps are repeated for each subject in the data set, so that each subject in turn will have been 'attacked' by each of the other 50 subjects.
+
+Step One (training): Select at random 200 password timining features by a genuine user. Use a NN to build a detection model for the user's typing.
+
+Step Two (genuine-user testing): Take the remaining 200 password timing features by a genuine user. Use the anomaly detections scoring system (sigmoid) function, and the dectection model from step one, to generate anomaly scores for these password-typing times. Record these anomly scores as `user scores`.
+
+Step Three (imposter-user testing): Take the first 5 password timing features from each of the other 50 users (i.e all subjects other than the genuine user). Use the anomaly detectors scoring function and the detection model (step 1) to generate anomaly scores for these password-typing times. Records these anomoly scores as `imposter scores`.
+
+Step Four (assessing performance): Employ the user scores and impostor scores to generate an ROC curve for the genuine user. Calculate, from the ROC curve, an equal-error rate, that is, the error rate corresponding to the point on the curve where the false-alarm (false-positive) rate and the miss (false-negative) rate are equal.
+
+This process is then repeated, designating each of the other subjects as the genuine user in turn.
 
 ### Thoughts 
 
