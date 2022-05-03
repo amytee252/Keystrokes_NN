@@ -10,6 +10,7 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import roc_curve
 import sklearn.metrics as metrics
+from sklearn.metrics import confusion_matrix
 
 import tensorflow as tf
 
@@ -18,6 +19,8 @@ from keras.layers import Dense, Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from tensorflow import keras
 from tensorflow.keras import layers
+
+import csv
 
 #TABS NOT SPACES!!!!
 
@@ -28,7 +31,7 @@ print(df) #look at first handful of entries to know what we are dealing with
 
 
 df_original = df.copy() #Always keep an original copy of the dataframe before any changes are made to it, just in case it is useful in the future!
-df_eer_user = pd.DataFrame(columns=['subject', 'eer'])
+
 #Lets plot a few things to understand what the data looks like
 ### plot some things!
 
@@ -111,7 +114,10 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 	return model
 
 
-def evaluateEER(user_scores, imposter_scores, subject, df_eer_user):
+
+	
+eer_per_user_dict = {}
+def evaluateEER(user_scores, imposter_scores, subject):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
 	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
 	roc_auc = metrics.auc(fpr, tpr)
@@ -124,8 +130,19 @@ def evaluateEER(user_scores, imposter_scores, subject, df_eer_user):
 	y = [missrates[idx2], farates[idx2]]
 	a = ( x[0] - x[1] ) / ( y[1] - x[1] - y[0] + x[0] )
 	eer = x[0] + a * ( y[0] - x[0] )
-	df_eer_user = df_eer_user.append({'subject' : subject, 'eer' : eer}, ignore_index = True) 
+	print('subject: ', subject ,' eer: ', eer)
+	eer_per_user_dict[subject] = eer
 	return eer
+'''
+	plt.figure()
+	plt.title('EER per user')
+	plt.xlabel('user')
+	plt.ylabel('EER')
+	plt.bar(subject, eer)
+	plt.draw()
+	plt.savefig('plots/EER_per_user.png')
+'''
+
 
 def ROCplot (subject, user_scores, imposter_scores):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
@@ -147,6 +164,16 @@ def ROCplot (subject, user_scores, imposter_scores):
 	plt.clf()
 
 
+
+def plot_loss(x , y, subject):
+	plt.plot(x)  #Make a plot of the mae (similar to loss) vs. epochs
+	plt.plot(y)
+	plt.title('model loss')
+	plt.ylabel('loss')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'test'], loc='upper left')
+	#plt.show()
+	plt.savefig('plots/ROC_' + str(subject) + '.png')
 
 
 #Create dictionaries to hold multiple dataframes
@@ -215,6 +242,7 @@ for subject in range(unique_users):
 	n_features = df_train_dict[subject].shape[1]
 	model = nn_model(n_features, n_classes, 31)
 	history = model.fit(train_ds, test_ds, epochs=3, batch_size=5)  #test with 3 epochs, but use 300 otherwise
+	print(history.history.keys())
 
 	# Predict on the NN
 	prediction_test = model.predict(test_ds)
@@ -227,16 +255,32 @@ for subject in range(unique_users):
 		if key == subject:
 			user_id = value
 			ROCplot(user_id, user_scores, imposter_scores)
-	eers.append(evaluateEER(user_scores, imposter_scores, subject, df_eer_user))
+			plot_loss(history.history['loss'], history.history['accuracy'], user_id)
+			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
 	
 
 print('eer')
 print(np.mean(eers), np.std(eers))
 
-print(df_eer_user)
+print(eer_per_user_dict)
+
+
+def eerPlot(data):
+
+	names = list(data.keys())
+	values = list(data.values())
+	plt.figure()
+	plt.bar(range(len(data)), values, tick_label=names)
+	plt.title('EER per user')
+	plt.xlabel('user', fontsize = 1)
+	plt.xticks(rotation=90)
+	plt.ylabel('EER')
+	plt.draw()
+	plt.savefig('plots/EER_per_user.png')
+
+eerPlot(eer_per_user_dict)
 
 #TO DO:
-# Confusion matrix
 # EER for each user
 
 	
