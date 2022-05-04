@@ -76,8 +76,8 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 	model.add(Dense(nodes, input_dim=input_dim, activation='relu'))
 	model.add(Dense(nodes, activation='relu'))
 	model.add(Dense(output_dim, activation='sigmoid'))
-	optimiser = keras.optimizers.Adam(learning_rate = 0.0001)
-	model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy'])
+	optimiser = keras.optimizers.Adam(learning_rate = 0.0001) #default parameters used except for lr.
+	model.compile(loss='categorical_crossentropy', optimizer=optimiser, metrics=['accuracy'])
 	return model
 
 
@@ -130,13 +130,13 @@ for subject in range(unique_users):
   	# Train the neural network model
 	n_features = df_train_dict[subject].shape[1]
 	model = nn_model(n_features, n_classes, 31)
-	history = model.fit(train_ds, test_ds, epochs=3, batch_size=5)  #test with 3 epochs, but use 300 otherwise
+	history = model.fit(train_ds, Y, epochs=500, batch_size=5)  #test with 3 epochs, but use 500 otherwise
 
 	# Predict on the NN
-	prediction_test = model.predict(test_ds)
+	prediction_test = 1.0 - model.predict(test_ds)
 	for pred in prediction_test:
 		user_scores.append(pred[0])
-	prediction_imposter = model.predict(imposter_ds)
+	prediction_imposter = 1.0 - model.predict(imposter_ds)
 	for pred in prediction_imposter:
 		imposter_scores.append(pred[0])
 	for key, value in int_to_subjects.items():
@@ -152,10 +152,11 @@ print('eer mean: ' , np.mean(eers), ' eer std: ', np.std(eers))
 
 print(eer_per_user_dict)
 
-
-
 eerPlot(eer_per_user_dict)
 
+#TO DO:
+# F1 score, precision, recall
+# Plot FRR and FAR
 
 
 	
