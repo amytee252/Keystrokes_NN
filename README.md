@@ -18,11 +18,33 @@ The subjects consisted of 30 males and 21 females. 8 were left-handed, and 43 we
 
 The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51). Please see dataset/dataset_features.txt for more in-depth discussion of the dataset.
 
+### Equal Error Rate (EER)
+
+The equal error rate (EER) is defined as the intersection of the false accept rate (FAR) and the False Reject Rate (FRR), where FRR = 1 - TPR (true positive rate) and FRR = FPR (false positive rate). 
+
 ### Plots
 
-Before making any changes to the dataset, each variable has been plotted. Please note that producing these plots is slow, so these plots have been made once, stored in the 'plots' directory and then this part of the code has been commented out. Afterall, these plots only need to be made once, not everytime the code is run. 
+Several different sets of plots are plotted.
 
+TAKING THE ORIGINAL DATASET AND MAKING NO CHANGES TO IT:
 
+1. Swarm Plots: Swarm plots of each user vs. variable is plotted as a swarm plot and a swarm plot with box plot overlayed. This shows the distribution of each variable for each user. Outliers can be seen, and averages can be ascertained.
+
+2. 2D Plots: For each letter PPD vs RPD where PPD = H.key1 + UD.key1.key2  RPD = UD.key1 is plotted. It is expected that these are linearly related.
+
+AFTER TRAINING, TESTING, PREDICTING...
+
+3. ROC Curve: For each subject (user) a ROC curve is plotted of the true positive rate vs. false positive rate.
+
+4. Equal Error Rate (EER): The EER per user is plotted. It plots both the False Accept Rate (FAR) and False Reject Rate (FRR). The rate at which the FAR and FRR are equal is known as the EER. Each user has their own EER assessed.
+
+5. Loss Plot: For each user the loss and accuracy is plotted per epoch.
+
+6. EER across users: A single EER bar chart is produced, which shows the EER for each user on one plot.
+
+Looking at the loss plots helped with knowing how to adjust some of the training parameters. For instance, it was clear that the model was getting more accurate when the number of epochs was increased, as it was clear that the model learned much better after about 100 epochs, but the loss and accuracy seemed to 'settle' around 300 epochs. There was little to no improvement when using 500 epochs, as such, looking at the loss plots helped make the decision to use 350 epochs. Also, making the learning parameter smaller and smaller helped improve the loss. 
+
+ 
 ### Using the Dataset with an Anomoly Detector
 
 The raw typing data (e.g. keystrokes and timestamps) cannot be directly used by an anomoly detector. A set of timing features has been extracted from the raw data. The features are organised into a vector of times, called a `timing vector'. 
@@ -85,7 +107,7 @@ $f(x) = max(0,x)$
 
 As it is quite similar to calculate the function itself and its derivative, it is speeds up the training and testing process in comparision to other functions.
 
-The output layer uses the sigmoid activation function takes any real value as input and outputs values between 0-1. The larger (more positive) the input, the closer the value is to 1, and similarly, the smaller the input (more negative), the closer the output will be to 0.0.
+The output layer uses the sigmoid activation function takes any real value as input and outputs values between 0-1. The larger (more positive) the input, the closer the value is to 1, and similarly, the smaller the input (more negative), the closer the output will be to 0.0. If using binary cross entropy as the loss function, then the output layer must have one node and a sigmoid function to predict the probability for loss
 
 The sigmoid function is given by:
 
@@ -93,6 +115,14 @@ $f(x) = \frac{1}{1+ e^{-x}}$
 
 As such the NN will output an anomaly score between 0-1 for each user. Values closer to 1 are likely to be genuine users, and values closer to 0 are likely to be seen as imposters. 
 
+As a test, the softmax activation function was also used in the output layer, however the results were comparable with sigmoid.
+
+
+### Loss
+
+NNs are trained using stochastic gradient descent optimisation algorithm. The error for the current state of the model must be estimated repeatedly so that weights can be updated to reduce the loss on the next evaluation. The type of loss function is dependent on whether we are doing regression or classification, and here we are doing the latter. We are trying classify whether a user is an imposter or not. The output layer must also be configured to be compatible with the loss function.
+
+I have elected 
 
 
 

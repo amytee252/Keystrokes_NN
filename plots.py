@@ -22,7 +22,7 @@ from tensorflow.keras import layers
 
 import csv
 # Creates swarm plots for each timing feature in the dataset
-def swarmplot(y_var, x_var, dataframe):
+def swarm_plot(y_var, x_var, dataframe):
 	sns_plot = sns.swarmplot(y=df[y_var], x=df[x_var], data=dataframe, s=1, size = 20)
 	fig1 = sns_plot.get_figure()
 	sns_plot.set_xticklabels(sns_plot.get_xticklabels(),rotation = 90)
@@ -40,7 +40,7 @@ def swarmplot(y_var, x_var, dataframe):
 strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']   # array to be used with scatterplot function below
 
 # Creates 2D scatterplots of PPD vs RPD where PPD = H + UD  RPD = UD  
-def scatterplot(y_var, x_var, dataframe):
+def scatter_plot(y_var, x_var, dataframe):
 	y_label = y_var
 	x_label = x_var + " + " + y_var
 	x_label_save = x_var + "+" + y_var
@@ -56,7 +56,7 @@ def scatterplot(y_var, x_var, dataframe):
 
 
 # Creates a ROC curve for each user
-def ROCplot (subject, user_scores, imposter_scores):
+def ROC_plot (subject, user_scores, imposter_scores):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
 	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
 	roc_auc = metrics.auc(fpr, tpr)
@@ -77,7 +77,7 @@ def ROCplot (subject, user_scores, imposter_scores):
 
 
 # Creates a FAR and FRR for each user
-def EERplot (subject, user_scores, imposter_scores):
+def EER_plot (subject, user_scores, imposter_scores):
 	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
 	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
 	roc_auc = metrics.auc(fpr, tpr)
@@ -88,7 +88,6 @@ def EERplot (subject, user_scores, imposter_scores):
 	plt.plot(missrates, '-')
 	plt.plot(farates, '-')
 	plt.legend(['missrates = FRR', 'farrates = FAR'], loc = 'upper left')
-	plt.xlabel('Threshold')
 	plt.savefig('plots/EER_' + str(subject) + '.png')
 	plt.figure().clear()
 	plt.close()
@@ -97,18 +96,17 @@ def EERplot (subject, user_scores, imposter_scores):
 
 
 # Plots the loss per epoch for each user
-def plot_loss(x , y, subject):
-	plt.plot(x)  #Make a plot of the mae (similar to loss) vs. epochs
+def loss_plot(x , y, subject):
+	plt.plot(x) 
 	plt.plot(y)
-	plt.title('model loss')
-	plt.ylabel('loss')
+	plt.title('model')
 	plt.xlabel('epoch')
-	plt.legend(['train', 'test'], loc='upper left')
+	plt.legend(['loss', 'accuracy'], loc='upper left')
 	#plt.show()
 	plt.savefig('plots/loss_' + str(subject) + '.png')
 
 # Plots the EER per user
-def eerPlot(data):
+def eer_bar_plot(data):
 
 	names = list(data.keys())
 	values = list(data.values())

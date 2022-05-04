@@ -39,14 +39,14 @@ print(df) #look at first handful of entries to know what we are dealing with
 #DO NOT UNCOMMENT THE BELOW! IT HAS ALREADY BEEN RUN AND UNCOMMENTING THIS WILL WASTE HOURS OF YOUR LIFE TRYING TO PLOT STUFF THAT ALREADY EXISTS !!!!
 
 #for column in df.columns[3:]:
-#	swarmplot(str(column), 'subject', df)
+#	swarm_plot(str(column), 'subject', df)
 	
 #strings = ['period', 't', 'i', 'e', 'five', 'Shift.r', 'o', 'a', 'n', 'l']
 
 #for i in range(len(strings) - 1):
 #	string_first = strings[i]
 #	string_second = strings[i+1]
-#	scatterplot('UD.' + string_first + '.' + string_second, 'H.' + string_second, df)
+#	scatter_plot('UD.' + string_first + '.' + string_second, 'H.' + string_second, df)
 
 
 
@@ -105,8 +105,10 @@ for subject in range(unique_users):
   	# Train the neural network model
 	n_features = df_train_dict[subject].shape[1]
 	model = nn_model(n_features, n_classes, 31)
-	history = model.fit(train_ds, test_ds, epochs=100, batch_size=5)  #test with 3 epochs, but use 500 otherwise
+	history = model.fit(train_ds, test_ds, epochs=350, batch_size=5)  
 
+
+	print(history.history.keys())
 	# Predict on the NN
 	prediction_test = 1.0 - model.predict(test_ds)
 	for pred in prediction_test:
@@ -118,9 +120,9 @@ for subject in range(unique_users):
 	for key, value in int_to_subjects.items():
 		if key == subject:
 			user_id = value
-			ROCplot(user_id, user_scores, imposter_scores)
-			EERplot(user_id, user_scores, imposter_scores)+
-			plot_loss(history.history['loss'], history.history['accuracy'], user_id)
+			ROC_plot(user_id, user_scores, imposter_scores)
+			EER_plot(user_id, user_scores, imposter_scores)
+			loss_plot(history.history['loss'], history.history['accuracy'], user_id) #x, y
 			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
 	
 
@@ -129,7 +131,7 @@ print('eer mean: ' , np.mean(eers), ' eer std: ', np.std(eers))
 
 print(eer_per_user_dict)
 
-eerPlot(eer_per_user_dict)
+eer_bar_plot(eer_per_user_dict)
 
 #TO DO:
 # Plot FRR and FAR
