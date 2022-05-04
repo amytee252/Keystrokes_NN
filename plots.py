@@ -76,6 +76,26 @@ def ROCplot (subject, user_scores, imposter_scores):
 	plt.clf()
 
 
+# Creates a FAR and FRR for each user
+def EERplot (subject, user_scores, imposter_scores):
+	labels = [0]*len(user_scores) + [1]*len(imposter_scores)
+	fpr, tpr, thresholds = roc_curve(labels, user_scores + imposter_scores)
+	roc_auc = metrics.auc(fpr, tpr)
+	missrates = 1 - tpr
+	farates = fpr
+	plt.figure()
+	plt.title('EER Curve')
+	plt.plot(missrates, '-')
+	plt.plot(farates, '-')
+	plt.legend(['missrates = FRR', 'farrates = FAR'], loc = 'upper left')
+	plt.xlabel('Threshold')
+	plt.savefig('plots/EER_' + str(subject) + '.png')
+	plt.figure().clear()
+	plt.close()
+	plt.cla()
+	plt.clf()
+
+
 # Plots the loss per epoch for each user
 def plot_loss(x , y, subject):
 	plt.plot(x)  #Make a plot of the mae (similar to loss) vs. epochs
@@ -85,7 +105,7 @@ def plot_loss(x , y, subject):
 	plt.xlabel('epoch')
 	plt.legend(['train', 'test'], loc='upper left')
 	#plt.show()
-	plt.savefig('plots/ROC_' + str(subject) + '.png')
+	plt.savefig('plots/loss_' + str(subject) + '.png')
 
 # Plots the EER per user
 def eerPlot(data):
