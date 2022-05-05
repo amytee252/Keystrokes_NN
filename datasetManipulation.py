@@ -26,12 +26,27 @@ from plots import *
 from EER import *
 from model import *
 from datasetManipulation import *
+from features import *
+
+
+def scaling(dataframe):
+	dataframe = dataframe.copy()
+	new_df = dataframe
+	scaler = MinMaxScaler() #Need to scale as using ReLu
+	standardised_features = pd.DataFrame(scaler.fit_transform(new_df[features].copy()), columns=features) 
+	#print(standardised_features)
+	old_shape = new_df.shape
+	new_df.drop(features, axis = 1, inplace = True)
+	# join back the normalized features
+	new_df = pd.concat([new_df, standardised_features], axis= 1)
+	assert old_shape == new_df.shape, "something went wrong!"
+	return new_df
+
+
 
 def datasetTransformations(dataframe):
 	dataframe = dataframe.copy()
 	new_df = dataframe
-	scaler = MinMaxScaler() #Need to scale as using ReLu
-	new_df = pd.DataFrame(scaler.fit_transform(new_df), columns=new_df.columns)
 	to_drop = ['subject', 'sessionIndex', 'rep' ]  #List of columns of data to drop from dataframe as they are irrelevant for training
 	new_df.drop(to_drop, inplace=True, axis=1)
 	return new_df

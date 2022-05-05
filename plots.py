@@ -34,6 +34,7 @@ def swarm_plot(y_var, x_var, dataframe):
 	sns_boxplot.tick_params(axis='x', labelsize=5)
 	fig2 = sns_boxplot.get_figure()
 	fig2.savefig('plots/' + y_var + '_' + x_var + '_boxplot.png', dpi = 300)
+	
 
 
 
@@ -104,9 +105,13 @@ def loss_plot(x , y, subject):
 	plt.legend(['loss', 'accuracy'], loc='upper left')
 	#plt.show()
 	plt.savefig('plots/loss_' + str(subject) + '.png')
+	plt.figure().clear()
+	plt.close()
+	plt.cla()
+	plt.clf()
 
 # Plots the EER per user
-def eer_bar_plot(data):
+def EER_bar_plot(data):
 
 	names = list(data.keys())
 	values = list(data.values())
@@ -118,3 +123,12 @@ def eer_bar_plot(data):
 	plt.ylabel('EER')
 	plt.draw()
 	plt.savefig('plots/EER_per_user.png')
+	plt.figure().clear()
+	plt.close()
+	plt.cla()
+	plt.clf()
+
+
+
+
+

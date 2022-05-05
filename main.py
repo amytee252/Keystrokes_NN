@@ -26,6 +26,7 @@ from plots import *
 from EER import *
 from model import *
 from datasetManipulation import *
+from features import *
 
 
 
@@ -58,7 +59,7 @@ subjects_to_int = {subject: i  for i, subject in enumerate(subjects)} #Change al
 int_to_subjects = {i: subject for i, subject in enumerate(subjects)} #..and vice versa! integers(key) and original subject IDs(values)
 
 df = df.replace(subjects_to_int) #replace subject column with subjects_to_int
-print(df.head)
+print(df)
 print(df.info() )
 
 
@@ -69,7 +70,14 @@ df_temp_dict = {}
 df_train_dict = {}
 df_test_dict = {}  #used as positive examples
 df_imposter_dict = {} #used as negative examples
+
 eers = []
+
+
+df = scaling(df)
+print(df)
+
+grouped = df.groupby(['subject'])
 
 for subject in range(unique_users):
 
@@ -80,8 +88,8 @@ for subject in range(unique_users):
 	df_train_dict[subject] = pd.DataFrame()
 	df_test_dict[subject] = pd.DataFrame()
 	df_imposter_dict[subject] = pd.DataFrame()
+	
 
-	grouped = df.groupby(['subject'])
 	df_temp_dict[subject] = grouped.get_group(subject)
 
 	df_train_dict[subject] = df_temp_dict[subject].sample(n=200)  # Instead of taking first 200 I am sampling randomly
@@ -89,31 +97,30 @@ for subject in range(unique_users):
 
 	imposter_data = df.loc[df.subject != subject, :]  
 	df_imposter_dict[subject] = imposter_data.groupby("subject").head(5)
+	
 
 	df_train_dict[subject] = datasetTransformations(  df_train_dict[subject])
 	df_test_dict[subject] = datasetTransformations(  df_test_dict[subject]) 
 	df_imposter_dict[subject] = datasetTransformations(  df_imposter_dict[subject]) 
 
-	train_ds = df_to_dataset(df_train_dict[subject])
-	test_ds = df_to_dataset(df_test_dict[subject])
-	imposter_ds = df_to_dataset(df_imposter_dict[subject])
 
-	# One hot encoding of target vector
-	Y = pd.get_dummies(df_test_dict[subject]).values
-	n_classes = Y.shape[1]
+	Y = pd.get_dummies(df_train_dict[subject]).values
+	n_classes = Y.shape[1] 
+	print('n_classes: ', n_classes)
 
   	# Train the neural network model
 	n_features = df_train_dict[subject].shape[1]
-	model = nn_model(n_features, n_classes, 31)
-	history = model.fit(train_ds, test_ds, epochs=350, batch_size=5)  
-
+	print('n_features: ', n_features)
+	model = nn_model(n_features, 1, 31)
+	history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=200, batch_size=5)  
+	# NOTE: WE are designating normal (user) with the label 0! An imposter would have a prediction closer to 1
 
 	print(history.history.keys())
 	# Predict on the NN
-	prediction_test = 1.0 - model.predict(test_ds)
+	prediction_test = 1.0 - model.predict(np.array(df_test_dict[subject]))
 	for pred in prediction_test:
 		user_scores.append(pred[0])
-	prediction_imposter = 1.0 - model.predict(imposter_ds)
+	prediction_imposter = 1.0 - model.predict(np.array(df_imposter_dict[subject]))
 	for pred in prediction_imposter:
 		imposter_scores.append(pred[0])
 
@@ -124,6 +131,9 @@ for subject in range(unique_users):
 			EER_plot(user_id, user_scores, imposter_scores)
 			loss_plot(history.history['loss'], history.history['accuracy'], user_id) #x, y
 			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
+			
+			
+			
 	
 
 print('eer')
@@ -131,10 +141,9 @@ print('eer mean: ' , np.mean(eers), ' eer std: ', np.std(eers))
 
 print(eer_per_user_dict)
 
-eer_bar_plot(eer_per_user_dict)
+EER_bar_plot(eer_per_user_dict)
 
-#TO DO:
-# Plot FRR and FAR
+
 
 
 	

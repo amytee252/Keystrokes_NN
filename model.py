@@ -35,5 +35,5 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 	#model.add(Dense(nodes, activation='relu'))
 	model.add(Dense(output_dim, activation='sigmoid'))
 	optimiser = keras.optimizers.Adam(learning_rate = 0.00001) #default parameters used except for lr.
-	model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy'])
+	model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy', tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
 	return model

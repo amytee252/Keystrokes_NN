@@ -6,6 +6,8 @@ In 2009, Killourhy and Maxion published a paper titled 'Comparing Anomaly-Detect
 
 It is believed that by looking at a user's behaviour as they type a password, you can identify imposters (external or internal) just by looking at their keyboard actions. It is possible to create a machine learning (ML) model which is capable of recognising whether the password entered is actually by user based on their keystrokes. This concept falls into the class of anomaly detection as it is the identification of events which differ from the rest of the data. It is expected that genuine login attempts by the same user will be similar to other login attempts by the same user, but attempts by an imposter will register as an outlier.
 
+What is being performed can be classed as One Class Classification (OOC) for anomaly detection. Anomalies are rare examples (imposters) that do not fit with the rest of the data. The aim is to build an algorithm that attempts to model 'normal' examples in order to then classify new examples as either normal or abnormal (anomaly). The aim of the model is to fit a model on normal data, and predict whether new data is normal or an anomaly. 
+
 ### Dataset
 
 The dataset used in the aforementioned paper is from 51 subjects typing 400 passwords each. The same password is typed by all subjects. The password, `.tie5Roanl` is a 10-character password containing letters, numbers, and punctuation. In subsequent years, this dataset has been referred to as the DSL2009 benchmark dataset, and will be referred to as such here. It is worth noting, that nowadays, when users are asked to generate a password, it is now common to include a special character, e.g. '$', '%', '#' etc.
@@ -42,7 +44,7 @@ AFTER TRAINING, TESTING, PREDICTING...
 
 6. EER across users: A single EER bar chart is produced, which shows the EER for each user on one plot.
 
-Looking at the loss plots helped with knowing how to adjust some of the training parameters. For instance, it was clear that the model was getting more accurate when the number of epochs was increased, as it was clear that the model learned much better after about 100 epochs, but the loss and accuracy seemed to 'settle' around 300 epochs. There was little to no improvement when using 500 epochs, as such, looking at the loss plots helped make the decision to use 350 epochs. Also, making the learning parameter smaller and smaller helped improve the loss. 
+Looking at the loss plots helped with knowing how to adjust some of the training parameters.
 
  
 ### Using the Dataset with an Anomoly Detector
@@ -71,6 +73,30 @@ Step Three (imposter-user testing): Take the first 5 password timing features fr
 Step Four (assessing performance): Employ the user scores and impostor scores to generate an ROC curve for the genuine user. Calculate, from the ROC curve, an equal-error rate, that is, the error rate corresponding to the point on the curve where the false-alarm (false-positive) rate and the miss (false-negative) rate are equal.
 
 This process is then repeated, designating each of the other subjects as the genuine user in turn.
+
+# Training Model
+
+The model is as follows:
+
+'''
+def nn_model(input_dim, output_dim=1, nodes=31):
+	model = keras.Sequential()
+	model.add(Dense(nodes, input_dim=input_dim, activation='relu'))
+	#model.add(Dropout(0.02))
+	#model.add(Dense(nodes, activation='relu'))
+	#model.add(Dropout(0.02))
+	#model.add(Dense(nodes, activation='relu'))
+	model.add(Dense(output_dim, activation='sigmoid'))
+	optimiser = keras.optimizers.Adam(learning_rate = 0.00001) #default parameters used except for lr.
+	model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy', tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
+	return model
+
+model = nn_model(n_features, 1, 31)
+history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=350, batch_size=5)  
+'''
+Each user has their own training dataset, and is labelled as normal data. This means passing in the training dataset (see np.array(df_train_dict[subject])) and an array of 0s which is equal to the rows in the training dataset. This is telling the model, all the training data can be considered as normal data (i.e contains no outliers/anomalies), please go learn this. 
+
+It is a little clunky, but as a subject (user) is commonly denoted with the label 0, and an imposter with the label 1, the metrics returned mean that on the training data the number of true negatives should be 200 per training and the others (tpr, tnr, fnr) should be 0. The accuracy should also very quickly rise to 1... 
 
 ### Thoughts 
 
@@ -115,17 +141,44 @@ $f(x) = \frac{1}{1+ e^{-x}}$
 
 As such the NN will output an anomaly score between 0-1 for each user. Values closer to 1 are likely to be genuine users, and values closer to 0 are likely to be seen as imposters. 
 
-As a test, the softmax activation function was also used in the output layer, however the results were comparable with sigmoid.
+As a test, the softmax activation function was also used in the output layer, however the results were comparable with sigmoid. However, softmax is mostly used with multi-label classification, which would also mean the loss function would need to be changed to categorical_crossentropy and the number of node outputs can be increased. But, categorial cross entropy is binary cross entropy when there is just 2 classes.
+
+
 
 
 ### Loss
 
 NNs are trained using stochastic gradient descent optimisation algorithm. The error for the current state of the model must be estimated repeatedly so that weights can be updated to reduce the loss on the next evaluation. The type of loss function is dependent on whether we are doing regression or classification, and here we are doing the latter. We are trying classify whether a user is an imposter or not. The output layer must also be configured to be compatible with the loss function.
 
-I have elected 
+I have elected to use binary cross entropy here. Normally when using an entropy loss function then the correct (actual) labels, in this case the test dataset must be encoded as floating numbers, one hot, or an array of integers. The predicted labels must then be presented as a probability distribution. As we are using the sigmoid function in the last layer, the predicted labels are automatically converted to a probabilitiy distribution so I do not need to explicitly do this.
+
+
+### Scaling
+
+Yes.. scaling gets it's own section ^^. 
+
+There are two ways to go out scaling all the numbers between 0-1. Either scale the entire (global) dataset, or scale each individual dataset that is a subset of the global dataset that gets created. It was felt it was better to scale the entire dataset.
+
+Let say you have a human and a bot (imposter) each typing the same password, the bot will do its best to mimic the human. As such, the bot will try to have the same typing speeds as a human, and for the most part the bot could probably replicate that. However, when one wants to use a special character or a capital, the human user needs to hit the shift key, whereas a bot does not need to do that, it can just select the appropriate character from its 'library'. Hence, the time it takes a bot to enter a special character or capital takes less time. A clever bot would recognise the need to wait a little longer before selecting the appropriate character to mimic the time delay of a human. But it is likely to not be able to mimic this time delay as well as it takes a human to hit the shift key + character. The bot could over or underestimate. Subtle differences such as these help to tell a human apart from a bot. 
+
+Normalising the entire dataset means that the bot/imposter will have the same distribution of times as the human, but the bots absolute time to enter the password will be different from the human.
+
+If I were to normalise each user's dataset, I would be normalising away the absolute time that makes a bot stick out compared to a human.
+
+### Accuracy
+
+Unsurprisingly the accuracy is 100% for the most part, as all the data being trained on has the same label, and so this is a very misleading metric, as each training session is completely imbalanced. Again, also pointlessly, one can easily guess what the tpr, tnr, fpr, and fnr are going to be, but for the sake of it, their values are still given, and the confusion matrix calculated for each training and plotted at the end.
 
 
 
+### Improvements / Food for Thought
+
+
+Validation dataset?
+Regression?
+LSTM? Not sure what I think of this. Ideally each row of data is supposed to be independent, but in reality it is not, and an LSTM would probably pick up on this, which isn't what you want.
+Balanced labelled data? (i.e datasets labelled with 0 and 1 (although 1 is rare...))
+Probably not relevant for current model with the datasets as they are, but back propagation? Drop out?
 
 
 
