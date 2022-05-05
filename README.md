@@ -78,7 +78,7 @@ This process is then repeated, designating each of the other subjects as the gen
 
 The model is as follows:
 
-'''
+```
 def nn_model(input_dim, output_dim=1, nodes=31):
 	model = keras.Sequential()
 	model.add(Dense(nodes, input_dim=input_dim, activation='relu'))
@@ -92,8 +92,8 @@ def nn_model(input_dim, output_dim=1, nodes=31):
 	return model
 
 model = nn_model(n_features, 1, 31)
-history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=350, batch_size=5)  
-'''
+history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=200, batch_size=5)  
+```
 Each user has their own training dataset, and is labelled as normal data. This means passing in the training dataset (see np.array(df_train_dict[subject])) and an array of 0s which is equal to the rows in the training dataset. This is telling the model, all the training data can be considered as normal data (i.e contains no outliers/anomalies), please go learn this. 
 
 It is a little clunky, but as a subject (user) is commonly denoted with the label 0, and an imposter with the label 1, the metrics returned mean that on the training data the number of true negatives should be 200 per training and the others (tpr, tnr, fnr) should be 0. The accuracy should also very quickly rise to 1... 
