@@ -27,6 +27,7 @@ from EER import *
 from model import *
 from datasetManipulation import *
 from features import *
+from metrics import *
 
 
 
@@ -112,10 +113,11 @@ for subject in range(unique_users):
 	n_features = df_train_dict[subject].shape[1]
 	print('n_features: ', n_features)
 	model = nn_model(n_features, 1, 31)
-	history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=200, batch_size=5)  
-	# NOTE: WE are designating normal (user) with the label 0! An imposter would have a prediction closer to 1
+	history = model.fit(np.array(df_train_dict[subject]), np.ones(df_train_dict[subject].shape[0]), epochs=100, batch_size=5)  
+	# NOTE: WE are designating normal (user) with the label 1! An imposter would have a prediction closer to 0. However, normally users are labeled with 0 and imposters with 1
 
 	print(history.history.keys())
+
 	# Predict on the NN
 	prediction_test = 1.0 - model.predict(np.array(df_test_dict[subject]))
 	for pred in prediction_test:
@@ -131,9 +133,9 @@ for subject in range(unique_users):
 			EER_plot(user_id, user_scores, imposter_scores)
 			loss_plot(history.history['loss'], history.history['accuracy'], user_id) #x, y
 			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
-			
-			
-			
+			metrics(subject, user_id, history)
+
+
 	
 
 print('eer')
