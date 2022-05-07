@@ -28,6 +28,8 @@ from model import *
 from datasetManipulation import *
 from features import *
 
+
+#MASSIVE NOTE: I need to check the if statements catch all cases... they may not.
 def metrics(subject, user, history):
 
 	if subject is 0:
@@ -46,15 +48,19 @@ def metrics(subject, user, history):
 	tpr = history.history[tpr_name][-1]
 	tnr = history.history[fnr_name][-1]
 
-	if fnr + tpr is 0.0:
-		print('cannot calculate recall, precision, F1 score')
-	elif tpr is 0.0:
-		print('cannot calculate recall, precision, F1 score')
-		
+	if tpr == 0.0:
+		recall = 0.0
+		precision = 0.0
+		print('cannot calculate recall or precision')
 	else:
-	
-		recall = tpr / (tpr + fnr)
-		precision = tpr / (tpr + fpr)
+
+		recall = (tpr / (tpr + fnr))
+		precision = (tpr / (tpr + fpr))
+
+	if (recall == 0.0 or precision == 0.0):
+		F1_score = 0.0
+		print('cannot calculate F1 score')
+	else:
 		F1_score = 2 * ((precision * recall) / (precision + recall))
 
 		print('For user: ', user )

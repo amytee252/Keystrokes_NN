@@ -34,7 +34,7 @@ from metrics import *
 df = pd.read_csv("./dataset/DSL-StrongPasswordData.csv") #open csv file for reading in pandas dataframe
 
 print(df.info()) #Get info about dataframe
-print(df) #look at first handful of entries to know what we are dealing with
+print(df) #look at entries to know what we are dealing with
 
 
 #Lets plot a few things to understand what the data looks like
@@ -64,87 +64,118 @@ print(df)
 print(df.info() )
 
 
-unique_users = df['subject'].nunique()
+subjects = df['subject'].nunique() #number of unique subjects
 
 #Create dictionaries to hold multiple dataframes
-df_temp_dict = {}
-df_train_dict = {}
-df_test_dict = {}  #used as positive examples
-df_imposter_dict = {} #used as negative examples
+df_temp = {}
+df_train = {}
+df_test = {} 
+df_imposter = {}
 
-eers = []
+eers = []  #Create an array to hold the equal error rates for each user
 
 
-df = scaling(df)
+df = scaling(df)  #Run the scaling function
 print(df)
 
-grouped = df.groupby(['subject'])
+grouped = df.groupby(['subject']) #group each user in the dataframe by their username (subject)
 
-for subject in range(unique_users):
+Y = pd.get_dummies(df).values #convert categorical variable into dummy/indicator variables.
+n_classes = Y.shape[1] 
+print('n_classes: ', n_classes)
 
-	user_scores = []
-	imposter_scores = []
+n_features = df.shape[1]
+print('n_features: ', n_features)
 
-	df_temp_dict[subject]  = pd.DataFrame()
-	df_train_dict[subject] = pd.DataFrame()
-	df_test_dict[subject] = pd.DataFrame()
-	df_imposter_dict[subject] = pd.DataFrame()
+
+class NeuralNet(keras.Sequential):
+    
+	def __init__(self, subjects):
+		super().__init__()
+		self.user_scores = []
+		self.imposter_scores = []
+		self.subjects = subjects
+		self.learning_rate = 0.0001
+		self.epochs = 100
+		self.batch_size = 5
+		self.inputs = 31 
+		self.outputs = 1
+		self.nodes = 31
+		self.activation_initial = 'relu'
+		self.activation_final = 'sigmoid'
+
+	def training(self):
+
+		self.model = keras.Sequential(
+    		[
+        		layers.Dense(self.inputs, activation=self.activation_initial),
+       			layers.Dense(8, activation=self.activation_initial),
+        		layers.Dense(self.outputs, activation = self.activation_final),
+   		 ]
+		)
+		self.model = nn_model(self.inputs, self.outputs, self.nodes)
+		self.history = self.model.fit(np.array(self.train), np.ones(self.train.shape[0]), epochs = self.epochs, batch_size = self.batch_size) 
+		#print(self.model.summary() )
+
+	def testing(self):
+
+		prediction_test = 1.0 - self.model.predict(np.array(self.test_genuine))
+		for pred in prediction_test:
+			self.user_scores.append(pred[0])
+		prediction_imposter = 1.0 - self.model.predict(np.array(self.test_imposter))
+		for pred in prediction_imposter:
+			self.imposter_scores.append(pred[0])
+    
+	def evaluate(self):
+		eers = []
+
+
+		for subject in range(subjects):
+			#print(subject)
+	
+			self.user_scores = []
+			self.imposter_scores = []
+
+			df_temp[subject]  = pd.DataFrame()
+			df_train[subject] = pd.DataFrame()
+			df_test[subject] = pd.DataFrame()
+			df_imposter[subject] = pd.DataFrame()
 	
 
-	df_temp_dict[subject] = grouped.get_group(subject)
+			df_temp[subject] = grouped.get_group(subject)
 
-	df_train_dict[subject] = df_temp_dict[subject].sample(n=200)  # Instead of taking first 200 I am sampling randomly
-	df_test_dict[subject] = df_temp_dict[subject].drop(df_train_dict[subject].index)
+			df_train[subject] = df_temp[subject].sample(n=200)  # Instead of taking first 200 I am sampling randomly
+			df_test[subject] = df_temp[subject].drop(df_train[subject].index)
 
-	imposter_data = df.loc[df.subject != subject, :]  
-	df_imposter_dict[subject] = imposter_data.groupby("subject").head(5)
+			imposter_data = df.loc[df.subject != subject, :]  
+			df_imposter[subject] = imposter_data.groupby("subject").head(5)
 	
 
-	df_train_dict[subject] = datasetTransformations(  df_train_dict[subject])
-	df_test_dict[subject] = datasetTransformations(  df_test_dict[subject]) 
-	df_imposter_dict[subject] = datasetTransformations(  df_imposter_dict[subject]) 
-
-
-	Y = pd.get_dummies(df_train_dict[subject]).values
-	n_classes = Y.shape[1] 
-	print('n_classes: ', n_classes)
-
-  	# Train the neural network model
-	n_features = df_train_dict[subject].shape[1]
-	print('n_features: ', n_features)
-	model = nn_model(n_features, 1, 31)
-	history = model.fit(np.array(df_train_dict[subject]), np.ones(df_train_dict[subject].shape[0]), epochs=100, batch_size=5)  
-	# NOTE: WE are designating normal (user) with the label 1! An imposter would have a prediction closer to 0. However, normally users are labeled with 0 and imposters with 1
-
-	print(history.history.keys())
-
-	# Predict on the NN
-	prediction_test = 1.0 - model.predict(np.array(df_test_dict[subject]))
-	for pred in prediction_test:
-		user_scores.append(pred[0])
-	prediction_imposter = 1.0 - model.predict(np.array(df_imposter_dict[subject]))
-	for pred in prediction_imposter:
-		imposter_scores.append(pred[0])
-
-	for key, value in int_to_subjects.items():
-		if key == subject:
-			user_id = value
-			ROC_plot(user_id, user_scores, imposter_scores)
-			EER_plot(user_id, user_scores, imposter_scores)
-			loss_plot(history.history['loss'], history.history['accuracy'], user_id) #x, y
-			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
-			metrics(subject, user_id, history)
-
-
+			self.train = datasetTransformations(  df_train[subject])
+			self.test_genuine = datasetTransformations(  df_test[subject]) 
+			self.test_imposter = datasetTransformations(  df_imposter[subject]) 
 	
+			
+			self.training()
+			self.testing()
 
-print('eer')
-print('eer mean: ' , np.mean(eers), ' eer std: ', np.std(eers))
+			print(self.history.history.keys())
+			for key, value in int_to_subjects.items():
+				if key == subject:
+					user_id = value
+					ROC_plot(user_id, self.user_scores, self.imposter_scores)
+					EER_plot(user_id, self.user_scores, self.imposter_scores)
+					loss_plot(self.history.history['loss'], self.history.history['accuracy'], user_id) #x, y
+					eers.append(evaluateEER(self.user_scores, self.imposter_scores, user_id))
+					metrics(subject, user_id, self.history)
+
+		return print('mean EER of all the users: ', np.mean(eers), ' std EER of all the users: ', np.std(eers))
+
+NeuralNet(subjects).evaluate()
 
 print(eer_per_user_dict)
 
 EER_bar_plot(eer_per_user_dict)
-
 
 
 
