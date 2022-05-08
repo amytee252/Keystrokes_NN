@@ -31,6 +31,7 @@ from metrics import *
 
 
 
+
 df = pd.read_csv("./dataset/DSL-StrongPasswordData.csv") #open csv file for reading in pandas dataframe
 
 print(df.info()) #Get info about dataframe
@@ -95,7 +96,7 @@ class NeuralNet(keras.Sequential):
 		self.user_scores = []
 		self.imposter_scores = []
 		self.subjects = subjects
-		self.learning_rate = 0.0001
+		self.learning_rate = 0.00001
 		self.epochs = 100
 		self.batch_size = 5
 		self.inputs = 31 
@@ -103,23 +104,27 @@ class NeuralNet(keras.Sequential):
 		self.nodes = 31
 		self.activation_initial = 'relu'
 		self.activation_final = 'sigmoid'
+		self.loss = 'binary_crossentropy'
+		self.initialiser = tf.keras.initializers.HeNormal()
 
 	def training(self):
 
 		self.model = keras.Sequential(
     		[
-        		layers.Dense(self.inputs, activation=self.activation_initial),
+        		layers.Dense(self.inputs, activation=self.activation_initial, kernel_initializer=self.initialiser),
        			layers.Dense(self.inputs, activation=self.activation_initial),
-        		layers.Dense(self.outputs, activation = self.activation_final),
+        		layers.Dense(self.outputs, activation = self.activation_final)
    		 ]
 		)
+		optimiser = keras.optimizers.Adam(learning_rate = self.learning_rate) 
+		self.model.compile(loss=self.loss, optimizer=optimiser, metrics=['accuracy', tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), 			tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
+
 		self.model = nn_model(self.inputs, self.outputs, self.nodes)
 		self.history = self.model.fit(np.array(self.train), np.ones(self.train.shape[0]), epochs = self.epochs, batch_size = self.batch_size) 
-		#print(self.model.summary() )
 
 	def testing(self):
 
-		prediction_test = 1.0 - self.model.predict(np.array(self.test_genuine))
+		prediction_test = 1.0 - self.model.predict(np.array(self.test_genuine))  #equivalent to 1 - s
 		for pred in prediction_test:
 			self.user_scores.append(pred[0])
 		prediction_imposter = 1.0 - self.model.predict(np.array(self.test_imposter))
@@ -131,7 +136,7 @@ class NeuralNet(keras.Sequential):
 
 
 		for subject in range(subjects):
-			#print(subject)
+			print(subject)
 	
 			self.user_scores = []
 			self.imposter_scores = []
@@ -165,9 +170,10 @@ class NeuralNet(keras.Sequential):
 					user_id = value
 					ROC_plot(user_id, self.user_scores, self.imposter_scores)
 					EER_plot(user_id, self.user_scores, self.imposter_scores)
-					loss_plot(self.history.history['loss'], self.history.history['accuracy'], user_id) #x, y
+					loss_plot(self.history.history['loss'], self.history.history['accuracy'], user_id) 
 					eers.append(evaluateEER(self.user_scores, self.imposter_scores, user_id))
-					metrics(subject, user_id, self.history)
+					metrics(subject + 1, user_id, self.history)
+			K.clear_session() #clears the current model Need this to not break 'metrics'
 
 		return print('mean EER of all the users: ', np.mean(eers), ' std EER of all the users: ', np.std(eers))
 

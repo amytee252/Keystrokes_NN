@@ -19,6 +19,7 @@ from keras.layers import Dense, Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 from tensorflow import keras
 from tensorflow.keras import layers
+from keras import backend as K 
 
 import csv
 
@@ -32,18 +33,12 @@ from features import *
 #MASSIVE NOTE: I need to check the if statements catch all cases... they may not.
 def metrics(subject, user, history):
 
-	if subject is 0:
-		fnr_name = 'false_negatives' 
-		fpr_name = 'false_positives' 
-		tpr_name = 'true_positives' 
-		tnr_name = 'true_negatives' 
-	else:
-		fnr_name = 'false_negatives_' + str(subject)
-		fpr_name = 'false_positives_' + str(subject)
-		tpr_name = 'true_positives_' + str(subject)
-		tnr_name = 'true_negatives_' + str(subject)
+	fnr_name = 'false_negatives_1'
+	fpr_name = 'false_positives_1'
+	tpr_name = 'true_positives_1' 
+	tnr_name = 'true_negatives_1'
 
-	fnr = history.history[fnr_name][-1]
+	fnr = history.history[fnr_name][-1]  #Returns last element in sequence
 	fpr = history.history[fpr_name][-1]
 	tpr = history.history[tpr_name][-1]
 	tnr = history.history[fnr_name][-1]
