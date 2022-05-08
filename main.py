@@ -109,7 +109,7 @@ class NeuralNet(keras.Sequential):
 		self.model = keras.Sequential(
     		[
         		layers.Dense(self.inputs, activation=self.activation_initial),
-       			layers.Dense(8, activation=self.activation_initial),
+       			layers.Dense(self.inputs, activation=self.activation_initial),
         		layers.Dense(self.outputs, activation = self.activation_final),
    		 ]
 		)

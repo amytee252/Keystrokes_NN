@@ -14,15 +14,51 @@ The dataset used in the aforementioned paper is from 51 subjects (users) typing 
 
 The data was collected as follows: A laptop was set up with an external keyboard, and a Windows application was developed that prompts the subject to type the password. The application displayed the password in a screen with a text-entry field. The subject must type the password correctly and then press enter. If any errors are detected, the user is asked to re-type the password. The subject must type the password correctly 50 times to complete a data-collection session. Each subject completed 8 data-collection sessions, for a total of 400 password-typing samples. There was at least a day between sessions to capture day-to-day variation between each subject's typing.
 
-Whenever a subject presses or releases a key, the application records the event (i.e keydown or keyup). An external reference clock with an accuracy of $`\pm`$200 microsecons was used.
+Whenever a subject presses or releases a key, the application records the event (i.e keydown or keyup). An external reference clock with an accuracy of $ \pm $ 200 microseconds was used.
 
-The subjects consisted of 30 males and 21 females. 8 were left-handed, and 43 were right-handed. The median age froup was 31-40, the youngest was 18-20 and the oldest was 61-70. The subject's sessions took between 1.25 - 11 minutes, which the median session taking 3 minutes.
+The subjects consisted of 30 males and 21 females. 8 were left-handed, and 43 were right-handed. The median age for the grroup was 31-40, the youngest was 18-20 and the oldest was 61-70. The subject's sessions took between 1.25 - 11 minutes, which the median session taking 3 minutes.
 
-The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51). Please see dataset/dataset_features.txt for more in-depth discussion of the dataset.
+The dataset contains 34 features, of which 31 features are floats, 2 are ints, and 1 is an object. Inspection of the data shows there are no non-null (i.e. missing) entries. There is a total of 20400 entries (400 * 51). Please see `dataset/dataset_features.txt` for more in-depth discussion of the dataset.
+
+### Method
+
+The aim of the task is to implement and evaluate a ML approach for anomaly dectection using the aforemention dataset, and coded in Python. The evaluation setup needs to conform to the description at `www.cs.cmu.edu/~keystroke/`. For each of the 51 subjects, the first 200 typing attempts should be used to train a model, and the remaining 200*51 attempts should be used to compute the Equal Error Rate (EER) as a measure of performance. 
+
+However, in Ref.[2], it is mentioned that training with the first 200 passwords for a user, has the disadvantage that there is strong intraclass variance that comes when the user gains more experience when typing the same password repeatedly, which will negatively affect the results. In real life, a person is not typing the same password 50 times in quick succession. A subject's ability to type the same password on the same computer will get better and better within a data collection session. To try and minimise this bias, it was elected to take a random sampling of a subject's 200 password typing attempts (i.e collecting data from across the 8 sessions rather than the first 4) as the training set, and the remaining 200 password attempts as the testing set. 
+
+Training and testing on 100% imbalanced datasets (as the user is considered genuine), using traditional binary or multi-class classication leads to biases to the class with the larger number of instances, and so modelling and detecting instances of an imposter is very difficult [3]. Hence, OOC is an alternative approach to detect abnormal (imposter) data compared to genuine user data. Typically, the negative class is considered the normal class, and the positive class the abnormal class. However, here in the ML model that is used that is switched, and the negative class is considered the imposter class, and the positive class the genuine user class. 
+
+One problem with anomaly detection is that typically there are severe class imbalances, as the number of positive classes (imposters) is much much smaller than the negative class (genuine users). In this instance, OCC can be used. In this type of binary classification, the ML model analyses the instances of only one class, which is usually the class of interest. The ML model trains and tests on a single class (genuine user), and then predicts on the anomalous (imposter) class.
+
+Before anything, a number of plots are made of each timing variable in the dataset. There are 3 features in the dataset which are objects and not numbers, two of these are dropped later as they are not relevant for training. One of the features identifies the user in terms of 's0XX' where XX represents a number, and this column of data is converted to a number, with each subject getting a unique number. For example user 's002' is translated to 0. Although the user's identification is not trained on, it could be useful for any future work to have the user identification as a number.
+
+The entire dataset is also normalised to be between 0-1. There are two ways to go out scaling all the numbers between 0-1. Either scale the entire (global) dataset, or scale each individual dataset that is a subset of the global dataset that gets created. It was felt it was better to scale the entire dataset. Lets say you have a human and a bot (imposter) each typing the same password, the bot will do its best to mimic the human. As such, the bot will try to have the same typing speeds as a human, and for the most part the bot could probably replicate that. However, when one wants to use a special character or a capital, the human user needs to hit the shift key, whereas a bot does not need to do that, it can just select the appropriate character from its 'library'. Hence, the time it takes a bot to enter a special character or capital takes less time. A clever bot would recognise the need to wait a little longer before selecting the appropriate character to mimic the time delay of a human. But it is likely to not be able to mimic this time delay as well as it takes a human to hit the shift key + character. The bot could over or underestimate. Subtle differences such as these help to tell a human apart from a bot. Normalising the entire dataset means that the bot/imposter will have the same distribution of times as the human, but the bots absolute time to enter the password will be different from the human. If I were to normalise each user's dataset, I would be normalising away the absolute time that makes a bot stick out compared to a human.
+
+For each user, training, testing and prediction (EER) is performed. The full dataset is divided up into 51 datasets, grouped by the user (called subject in the dataset), hence, there are 51 datasets containing 400 passwords. Each user dataset is then further divided equally into two at random, with one considered the training dataset and the other the testing dataset. 
+
+The training dataset is passed through a neural network (NN) which only contains one hidden layer. It was found that adding several hidden layers and including drop out (at rate 0.2) saw little to no improvement in the EER result. Hence, the network was kept simple. The input layer consists of 31 nodes, which is equal to the 31 timing-data features in the dataset. The hidden layer contains XX nodes. The output layer contains a single node. The input and hidden layer both use the same activation function (ReLu) and the output layer uses sigmoid. An activation function, $f(x)$ defines how the weighted sum of inputs is transformed into an output from a node or nodes in a layer in the network. Many activation functions are non-linear adding non-linearity to the network. Generally, all hidden layers of a NN will use the same activation function, with the output layer using a different activation function dependent on the prediction required by the model. Although there are many choices for activation function, the Rectified Linear Unit, or ReLu is one of the most popular for Neural Networks (NNs). It is least susceptible to vanishing gradients (although that should not really be a worry here as there are not many layers in the NN), and introduces non-linearity to the network. As we are using the ReLu activation function, the input data the NN has to be scaled to be between 0-1. The function returns 0 if the linear combination of inputs is negative, and for any positive value it returns that value back. This function is given by:
+
+```math
+$f(x) = max(0,x)$
+```
+
+As it is quite similar to calculate the function itself and its derivative, it is speeds up the training and testing process in comparision to other functions.
+
+The output layer uses the sigmoid activation function takes any real value as input and outputs values between 0-1. The larger (more positive) the input, the closer the value is to 1, and similarly, the smaller the input (more negative), the closer the output will be to 0.0. If using binary cross entropy as the loss function, then the output layer must have one node and a sigmoid function to predict the probability for loss
+
+The sigmoid function is given by:
+
+$f(x) = \frac{1}{1+ e^{-x}}$
+
+As such the NN will output an anomaly score between 0-1 for each user. Values closer to 1 are likely to be genuine users, and values closer to 0 are likely to be seen as imposters. 
+
+As a test, the softmax activation function was also used in the output layer, however the results were comparable with sigmoid. However, softmax is mostly used with multi-label classification, which would also mean the loss function would need to be changed to categorical_crossentropy and the number of node outputs can be increased. But, categorial cross entropy is binary cross entropy when there is just 2 classes.
+
+
 
 ### Equal Error Rate (EER)
 
-The equal error rate (EER) is defined as the intersection of the false accept rate (FAR) and the False Reject Rate (FRR), where FRR = 1 - TPR (true positive rate) and FRR = FPR (false positive rate). 
+The equal error rate (EER) is defined as the intersection of the false accept rate (FAR) and the false reject rate (FRR), where FRR = 1 - TPR (true positive rate) and FRR = FPR (false positive rate). 
 
 ### Plots
 
@@ -153,18 +189,6 @@ NNs are trained using stochastic gradient descent optimisation algorithm. The er
 I have elected to use binary cross entropy here. Normally when using an entropy loss function then the correct (actual) labels, in this case the test dataset must be encoded as floating numbers, one hot, or an array of integers. The predicted labels must then be presented as a probability distribution. As we are using the sigmoid function in the last layer, the predicted labels are automatically converted to a probabilitiy distribution so I do not need to explicitly do this.
 
 
-### Scaling
-
-Yes.. scaling gets it's own section ^^. 
-
-There are two ways to go out scaling all the numbers between 0-1. Either scale the entire (global) dataset, or scale each individual dataset that is a subset of the global dataset that gets created. It was felt it was better to scale the entire dataset.
-
-Let say you have a human and a bot (imposter) each typing the same password, the bot will do its best to mimic the human. As such, the bot will try to have the same typing speeds as a human, and for the most part the bot could probably replicate that. However, when one wants to use a special character or a capital, the human user needs to hit the shift key, whereas a bot does not need to do that, it can just select the appropriate character from its 'library'. Hence, the time it takes a bot to enter a special character or capital takes less time. A clever bot would recognise the need to wait a little longer before selecting the appropriate character to mimic the time delay of a human. But it is likely to not be able to mimic this time delay as well as it takes a human to hit the shift key + character. The bot could over or underestimate. Subtle differences such as these help to tell a human apart from a bot. 
-
-Normalising the entire dataset means that the bot/imposter will have the same distribution of times as the human, but the bots absolute time to enter the password will be different from the human.
-
-If I were to normalise each user's dataset, I would be normalising away the absolute time that makes a bot stick out compared to a human.
-
 ### Accuracy
 
 Unsurprisingly the accuracy is 100% for the most part, as all the data being trained on has the same label, and so this is a very misleading metric, as each training session is completely imbalanced. Again, also pointlessly, one can easily guess what the tpr, tnr, fpr, and fnr are going to be, but for the sake of it, their values are still given, and the confusion matrix calculated for each training and plotted at the end.
@@ -209,3 +233,5 @@ Probably not relevant for current model with the datasets as they are, but back 
 [1] Kevin S. Killourhy and Roy A. Maxion. "Comparing Anomaly Detectors for Keystroke Dynamics," in Proceedings of the 39th Annual International Conference on Dependable Systems and Networks (DSN-2009), pages 125-134, Estoril, Lisbon, Portugal, June 29-July 2, 2009. IEEE Computer Society Press, Los Alamitos, California, 2009.
 
 [2] Su, Gordon. "Analysis of Keystroke Dynamics Algorithms with Feedforward Neural Networks", The Cooper Union for the Advancement of Science and Art, Albert Nerken School of Engineering, December 8 2020
+"
+[3] Naeem Seliya, Azadeh Abdollah Zadeh, Taghi M. Khosgoftaar. "A literature review on one-class classification and its potential applications in big data" in Journal of Big Data, 122 (2021)
