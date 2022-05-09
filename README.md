@@ -120,6 +120,8 @@ The EER is calculated for each user, and the average across all the users is giv
 
 ## Accuracy
 
+## ROC Curve
+
 ## Recall, Precision, and F1 Score
 
 ## EER
@@ -146,8 +148,19 @@ AFTER TRAINING, TESTING, PREDICTING...
 
 Looking at the loss plots helped with knowing how to adjust some of the training parameters.
 
+# How to Run
 
+The script to run is `main.py`, via the run command `python main.py'. 
 
+This is run with various pacakges which can be found inside `requirements.txt`, and can be installed via the following commands inside a virtual enviornment:
+
+```
+python3 -m venv myenvNN
+source myenvNN/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+The script is run inside the virtual enviornment.
 
 
 ### Thoughts 
@@ -176,6 +189,7 @@ Unsurprisingly the accuracy is 100% for the most part, as all the data being tra
 - Balanced labelled data? (i.e datasets labelled with 0 and 1 (although 1 is rare...))
 - Probably not relevant for current model with the datasets as they are, but back propagation? Drop out?
 - RNN? Although probably not worth it if the data isn't balanced.
+- Try using Keras Tuner for hyperparameter optimisation? But seems a bit pointless here unless having more balanced data.
 
 
 
