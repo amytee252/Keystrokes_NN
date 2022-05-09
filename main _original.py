@@ -134,6 +134,7 @@ for subject in range(unique_users):
 			loss_plot(history.history['loss'], history.history['accuracy'], user_id) #x, y
 			eers.append(evaluateEER(user_scores, imposter_scores, user_id))
 			metrics(subject, user_id, history)
+	K.clear_session() #clears the current model Need this to not break 'metrics'
 
 
 	

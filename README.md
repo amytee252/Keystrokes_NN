@@ -116,6 +116,13 @@ The equal error rate (EER) is defined as the intersection of the false accept ra
 
 The EER is calculated for each user, and the average across all the users is given at the end. The EER is what is used as the performance metric for the NN.
 
+# Metrics
+
+## Accuracy
+
+## Recall, Precision, and F1 Score
+
+## EER
 
 # Plots
 
@@ -143,45 +150,6 @@ Looking at the loss plots helped with knowing how to adjust some of the training
 
 
 
-
-# Training and Evaluating steps
-
-There are four main steps to discriminate a single subject (designated as a genuine user) from the other 50 subjects (designated as imposters). After evaluating for a single subject, the four steps are repeated for each subject in the data set, so that each subject in turn will have been 'attacked' by each of the other 50 subjects.
-
-Step One (training): Select at random 200 password timining features by a genuine user. Use a NN to build a detection model for the user's typing.
-
-Step Two (genuine-user testing): Take the remaining 200 password timing features by a genuine user. Use the anomaly detections scoring system (sigmoid) function, and the dectection model from step one, to generate anomaly scores for these password-typing times. Record these anomly scores as `user scores`.
-
-Step Three (imposter-user testing): Take the first 5 password timing features from each of the other 50 users (i.e all subjects other than the genuine user). Use the anomaly detectors scoring function and the detection model (step 1) to generate anomaly scores for these password-typing times. Records these anomoly scores as `imposter scores`.
-
-Step Four (assessing performance): Employ the user scores and impostor scores to generate an ROC curve for the genuine user. Calculate, from the ROC curve, an equal-error rate, that is, the error rate corresponding to the point on the curve where the false-alarm (false-positive) rate and the miss (false-negative) rate are equal.
-
-This process is then repeated, designating each of the other subjects as the genuine user in turn.
-
-# Training Model
-
-The model is as follows:
-
-```
-def nn_model(input_dim, output_dim=1, nodes=31):
-	model = keras.Sequential()
-	model.add(Dense(nodes, input_dim=input_dim, activation='relu'))
-	#model.add(Dropout(0.02))
-	#model.add(Dense(nodes, activation='relu'))
-	#model.add(Dropout(0.02))
-	#model.add(Dense(nodes, activation='relu'))
-	model.add(Dense(output_dim, activation='sigmoid'))
-	optimiser = keras.optimizers.Adam(learning_rate = 0.00001) #default parameters used except for lr.
-	model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy', tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
-	return model
-
-model = nn_model(n_features, 1, 31)
-history = model.fit(np.array(df_train_dict[subject]), np.zeros(df_train_dict[subject].shape[0]), epochs=200, batch_size=5)  
-```
-Each user has their own training dataset, and is labelled as normal data. This means passing in the training dataset (see np.array(df_train_dict[subject])) and an array of 0s which is equal to the rows in the training dataset. This is telling the model, all the training data can be considered as normal data (i.e contains no outliers/anomalies), please go learn this. 
-
-It is a little clunky, but as a subject (user) is commonly denoted with the label 0, and an imposter with the label 1, the metrics returned mean that on the training data the number of true negatives should be 200 per training and the others (tpr, tnr, fnr) should be 0. The accuracy should also very quickly rise to 1... 
-
 ### Thoughts 
 
 Subjects ability to type the same password will become easier and quicker the more often a password is typed. Eventually muscle memory will kick in and the typing of the password will be quicker.
@@ -191,20 +159,6 @@ At the start of a session a user is likely to type a password more slower than a
 Each user was using the same keyboard each time. In reality, people could be using different keyboards (e.g. at work, at home, on a laptop, on a computer, on a external keyboard) when entering the password, so this affect is not taken into account. In a more personal comment, I use both an external keyboard and the keyboard attached to my laptop. I have two external keyboards depending on where I am (Germany or the UK), and although my German keyboard has the physical layout of a German keyboard the input is actually British, so sometimes I press the wrong key because I forget which key is actually what as they are not the same.
 
 If I am looking at my keyboard rather than screen, I am less likely to make a mistake when typing.
-
-### Data Setup
-
-Although it is requested to use the first 200 feature vectors of each subject (user) as training data, I have decided against this. This is because if you take the first 200 typing samples, there is likely to be strong intraclass variances that comes when the user is typing the same password repeatedly, and this will negatively affect the results, as they are likely to get quicker and more accurate at typing the same password repeatedly. Instead what I have done is taken 200 feature vectors for each subject at random from the 400 feature vectors that are available for each subject. The remaining 200 feature vectors are used as positive test data for each user. Then the first 5 samples from the remaining 50 subjects are used to form 250 negative feature vectors as imposters for the authentication phase for this user. The imposter's samples are never seen during the training time. As such there are 51 sets of trainings/testings performed, each using a different subjects data for training and testing. 
-
-The authentication accuracy is evaluated using the equal error rate (EER), where the miss rate and false alarm rate are equal. The evaluation is performed for each subject. The mean and standard deviation of the EERs for the 51 subjects is also reported.
-
-
-
-
-
-
-
-
 
 
 ### Accuracy
@@ -216,11 +170,12 @@ Unsurprisingly the accuracy is 100% for the most part, as all the data being tra
 ### Improvements / Food for Thought
 
 
-Validation dataset?
-Regression?
-LSTM? Not sure what I think of this. Ideally each row of data is supposed to be independent, but in reality it is not, and an LSTM would probably pick up on this, which isn't what you want.
-Balanced labelled data? (i.e datasets labelled with 0 and 1 (although 1 is rare...))
-Probably not relevant for current model with the datasets as they are, but back propagation? Drop out?
+- Validation dataset?
+- Regression?
+- LSTM? Not sure what I think of this. Ideally each row of data is supposed to be independent, but in reality it is not, and an LSTM would probably pick up on this, which isn't what you want.
+- Balanced labelled data? (i.e datasets labelled with 0 and 1 (although 1 is rare...))
+- Probably not relevant for current model with the datasets as they are, but back propagation? Drop out?
+- RNN? Although probably not worth it if the data isn't balanced.
 
 
 
