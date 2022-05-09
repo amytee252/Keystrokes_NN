@@ -206,5 +206,5 @@ Unsurprisingly the accuracy is 100% for the most part, as all the data being tra
 [1] Kevin S. Killourhy and Roy A. Maxion. "Comparing Anomaly Detectors for Keystroke Dynamics," in Proceedings of the 39th Annual International Conference on Dependable Systems and Networks (DSN-2009), pages 125-134, Estoril, Lisbon, Portugal, June 29-July 2, 2009. IEEE Computer Society Press, Los Alamitos, California, 2009.
 
 [2] Su, Gordon. "Analysis of Keystroke Dynamics Algorithms with Feedforward Neural Networks", The Cooper Union for the Advancement of Science and Art, Albert Nerken School of Engineering, December 8 2020
-"
+
 [3] Naeem Seliya, Azadeh Abdollah Zadeh, Taghi M. Khosgoftaar. "A literature review on one-class classification and its potential applications in big data" in Journal of Big Data, 122 (2021)
