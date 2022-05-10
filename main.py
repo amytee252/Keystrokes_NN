@@ -96,8 +96,8 @@ class NeuralNet(keras.Sequential):
 		self.user_scores = []
 		self.imposter_scores = []
 		self.subjects = subjects
-		self.learning_rate = 0.00001
-		self.epochs = 100
+		self.learning_rate = 0.0001
+		self.epochs = 200
 		self.batch_size = 5
 		self.inputs = 31 
 		self.outputs = 1
@@ -117,7 +117,7 @@ class NeuralNet(keras.Sequential):
    		 ]
 		)
 		optimiser = keras.optimizers.Adam(learning_rate = self.learning_rate) 
-		self.model.compile(loss=self.loss, optimizer=optimiser, metrics=['accuracy', tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), 			tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
+		self.model.compile(loss=self.loss, optimizer=optimiser, metrics=[tf.keras.metrics.Accuracy(), tf.keras.metrics.FalseNegatives(), tf.keras.metrics.TruePositives(), 			tf.keras.metrics.TrueNegatives(), tf.keras.metrics.FalsePositives()])
 
 		self.model = nn_model(self.inputs, self.outputs, self.nodes)
 		self.history = self.model.fit(np.array(self.train), np.ones(self.train.shape[0]), epochs = self.epochs, batch_size = self.batch_size) 

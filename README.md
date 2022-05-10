@@ -118,13 +118,43 @@ The EER is calculated for each user, and the average across all the users is giv
 
 # Metrics
 
+There are five metrics used here, although four of them seem pretty useless given the training/testing setup.
+
 ## Accuracy
+
+Calculates how often predictions equal labels. The accuracy is always 1, as all the training/testing data contains a single class.
 
 ## ROC Curve
 
+Summarises the trade off between the true positive rate and the false positive rate. ROC curves are appropriate when the observations are balanced between each class, which they are not here. The tpr is the number of true positives divided by the number of tpr and fnr. It describes how good the model is at predicting the positive class when the actual outcome is positive. The tpr is also referred to as the sensitivity. The fpr is the number of false positives divided by the sum of the number of fpr and number of tnr. It is also called the false alarm rate as it summarises how often a positive class is predicted when the actual outcome is negative. The area under a ROC curve summarises the models skill. The closer the area is to 1, the better the model is at classifying.
+
+Although a ROC curve is probably not appropriate here, it is plotted as it is related to the EER.
+
 ## Recall, Precision, and F1 Score
 
+tpr = true positive rate. Correctly predicted event
+fpr = false positive rate. Incorrectly predicted event.
+tnr = true negative rate. Correctly predicted non-event.
+fnr = false negative rate. Incorrectly predicted non-event.
+
+Precision: what proportion of positive identifications were actually made?
+
+
+```math
+\frac{tpr}{tpr + fpr}
+```
+
+Recall: What proportion of actual positives were identified correctly?
+
+```math
+\frac{tpr}{tpr + fnr}
+```
+
+F1 score: Harmonic mean of precision and recall. Reaches it's best value at 1 and worst score at 0.
+
 ## EER
+
+This is discussed earlier.
 
 # Plots
 
@@ -138,9 +168,9 @@ TAKING THE ORIGINAL DATASET AND MAKING NO CHANGES TO IT:
 
 AFTER TRAINING, TESTING, PREDICTING...
 
-3. ROC Curve: For each subject (user) a ROC curve is plotted of the true positive rate vs. false positive rate.
+3. ROC Curve: For each subject (user) a ROC curve is plotted of the true positive rate vs. false positive rate. 
 
-4. Equal Error Rate (EER): The EER per user is plotted. It plots both the False Accept Rate (FAR) and False Reject Rate (FRR). The rate at which the FAR and FRR are equal is known as the EER. Each user has their own EER assessed.
+4. Equal Error Rate (EER): The EER per user is plotted. It plots both the False Accept Rate (FAR) and False Reject Rate (FRR). The rate at which the FAR and FRR are equal is known as the EER. Each user has their own EER assessed. The EER rate is read off on the y axis.
 
 5. Loss Plot: For each user the loss and accuracy is plotted per epoch.
 
@@ -174,11 +204,6 @@ Each user was using the same keyboard each time. In reality, people could be usi
 If I am looking at my keyboard rather than screen, I am less likely to make a mistake when typing.
 
 
-### Accuracy
-
-Unsurprisingly the accuracy is 100% for the most part, as all the data being trained on has the same label, and so this is a very misleading metric, as each training session is completely imbalanced. Again, also pointlessly, one can easily guess what the tpr, tnr, fpr, and fnr are going to be, but for the sake of it, their values are still given, and the confusion matrix calculated for each training and plotted at the end.
-
-
 
 ### Improvements / Food for Thought
 
@@ -190,6 +215,7 @@ Unsurprisingly the accuracy is 100% for the most part, as all the data being tra
 - Probably not relevant for current model with the datasets as they are, but back propagation? Drop out?
 - RNN? Although probably not worth it if the data isn't balanced.
 - Try using Keras Tuner for hyperparameter optimisation? But seems a bit pointless here unless having more balanced data.
+- Probably should have plotted a precision-recall curve as that is better for imbalanced datasets. This is because ROC curves will present a more optimistic picture of a model with imbalanced classes.
 
 
 
